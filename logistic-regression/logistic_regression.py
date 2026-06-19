@@ -1,4 +1,5 @@
 import numpy as np
+from utils import compute_mu_sigma, standardize
 
 
 class LogisticRegression:
@@ -11,12 +12,14 @@ class LogisticRegression:
         self.w = None
         self.b = 0
         self.cost_history = []
+        self.mu = None
+        self.sigma = None
 
     def predict(self, x):
         if self.mu is None or self.sigma is None:
             raise ValueError("Model not fitted yet.")
 
-        x = self._normalize(x)
+        x = standardize(x, self.mu, self.sigma)
         return (self._predict_proba(x) >= 0.5).astype(int)
 
     def fit(self, x, y):
@@ -24,12 +27,8 @@ class LogisticRegression:
         self.w = np.zeros(x.shape[1])
         prev_cost = 0
 
-        # normalize
-        self.mu = np.mean(x, axis=0)
-
-        # added 1e-8 to prevent /0 if std=0
-        self.sigma = np.std(x, axis=0) + 1e-8
-        x = self._normalize(x)
+        self.mu, self.sigma = compute_mu_sigma(x)
+        x = standardize(x, self.mu, self.sigma)
 
         for i in range(self.nb_of_iterations):
             predictions = self._predict_proba(x)
@@ -68,5 +67,4 @@ class LogisticRegression:
     def _predict_proba(self, x):
         return self._sigmoid(np.dot(x, self.w) + self.b)
 
-    def _normalize(self, x):
-        return (x - self.mu) / self.sigma
+

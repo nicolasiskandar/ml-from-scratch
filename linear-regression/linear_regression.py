@@ -1,4 +1,5 @@
 import numpy as np
+from utils import compute_mu_sigma, standardize
 
 
 class LinearRegression:
@@ -18,7 +19,7 @@ class LinearRegression:
         if self.mu is None or self.sigma is None:
             raise ValueError("Model not fitted yet.")
 
-        x = self._normalize(x)
+        x = standardize(x, self.mu, self.sigma)
         return np.dot(x, self.w) + self.b
 
     def fit(self, x, y):
@@ -26,11 +27,8 @@ class LinearRegression:
         self.w = np.zeros(x.shape[1])
         prev_cost = 0
 
-        # Normalize
-        self.mu = np.mean(x, axis=0)
-        # added 1e-8 to prevent /0 if std=0
-        self.sigma = np.std(x, axis=0) + 1e-8
-        x = self._normalize(x)
+        self.mu, self.sigma = compute_mu_sigma(x)
+        x = standardize(x, self.mu, self.sigma)
 
         for i in range(self.nb_of_iterations):
             predictions = np.dot(x, self.w) + self.b
@@ -59,5 +57,4 @@ class LinearRegression:
         J_wb = (SSE + reg_term) / (2 * m)
         return J_wb
 
-    def _normalize(self, x):
-        return (x - self.mu) / self.sigma
+

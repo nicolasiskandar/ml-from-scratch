@@ -9,3 +9,7 @@ data/
 *.csv
 *.tsv
 .codex
+
+.venv/
+build/
+ml_from_scratch.egg-info/
